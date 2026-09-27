@@ -1,0 +1,5 @@
+{
+  "name": "au-mcp-adapter-grok",
+  "version": "0.0.0",
+  "description": "Bridges Grok hooks and the au MCP server to the au-mcp daemon."
+}

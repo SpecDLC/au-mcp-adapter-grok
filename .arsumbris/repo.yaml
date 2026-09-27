@@ -1,0 +1,5 @@
+type: au.engine.repo::au-engine
+name: au-mcp-adapter-grok
+description: The Grok adapter for au-mcp; translates hooks, tools, session identity, and generated skills and rules.
+deps:
+  - name: au-mcp-sdk

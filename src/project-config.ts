@@ -15,6 +15,12 @@ export interface MergeFailure {
   error: string
 }
 
+/** Paths to drop before the next managed set is written: the previous set, plus any next path this adapter owns. */
+export function pathsToReplace(previous: string[], next: string[], adapterDir: string): string[] {
+  const owned = next.filter((path) => isAdapterManagedPath(path, adapterDir))
+  return [...new Set([...previous, ...owned])]
+}
+
 /** Paths this adapter owns: its own checkout, and generated skill trees under the au-mcp gen dir. */
 export function isAdapterManagedPath(candidate: string, adapterDir: string): boolean {
   if (candidate === adapterDir) return true

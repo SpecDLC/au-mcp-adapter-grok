@@ -33,7 +33,7 @@ Governed actions remain blocked when daemon communication or startup initializat
 
 ## How to use this
 
-Requires macOS, Node 24.19+, the `grok` binary, and sibling `au-mcp`, `au-mcp-sdk`, and `au-engine-sdk` checkouts. Install with `pnpm install`.
+Requires Node 24, the `grok` binary, and sibling `au-mcp`, `au-mcp-sdk`, and `au-engine-sdk` checkouts. Install with `pnpm install`. The arsumbris release itself is tested on macOS.
 
 A launcher assembles the Grok invocation.
 

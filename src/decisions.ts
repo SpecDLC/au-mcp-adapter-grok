@@ -5,24 +5,13 @@ import type { Decision } from '@arsumbris/au-mcp-sdk'
 
 /** JSON for stdout, or null when the tool should run with nothing else to say. */
 export function preToolOutput(decision: Decision): string | null {
-  if (decision.kind === 'deny') {
+  if (decision.kind === 'deny' || decision.kind === 'ask') {
     return JSON.stringify({
-      decision: 'deny',
+      decision: decision.kind,
       reason: decision.reason,
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: decision.reason,
-      },
-    })
-  }
-  if (decision.kind === 'ask') {
-    return JSON.stringify({
-      decision: 'ask',
-      reason: decision.reason,
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'ask',
+        permissionDecision: decision.kind,
         permissionDecisionReason: decision.reason,
       },
     })

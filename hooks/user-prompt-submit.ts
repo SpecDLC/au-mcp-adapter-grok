@@ -3,11 +3,11 @@
 import { EventKind } from '@arsumbris/au-mcp-sdk'
 
 import { observeEvent } from '../src/bridge.ts'
-import { normalizePayload, readPayload } from '../src/payload.ts'
+import { runHook } from '../src/payload.ts'
 
-const payload = normalizePayload(await readPayload(process.stdin))
-await observeEvent(payload, EventKind.UserPrompt, {
-  prompt: payload.prompt ?? null,
-  permission_mode: payload.permissionMode ?? null,
-})
-process.exit(0)
+await runHook((payload) =>
+  observeEvent(payload, EventKind.UserPrompt, {
+    prompt: payload.prompt ?? null,
+    permission_mode: payload.permissionMode ?? null,
+  }),
+)

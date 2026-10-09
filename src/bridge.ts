@@ -46,30 +46,40 @@ export function agentFields(payload: GrokHookPayload | null): { agent_id?: strin
   }
 }
 
-async function withSession<T>(
-  payload: GrokHookPayload | null,
-  fn: (client: DaemonClient, session: string) => Promise<T>,
-  fallback: T,
-): Promise<T> {
-  const { workspace, session } = resolveContext(payload)
+async function withTransport<T>(workspace: string, fn: (client: DaemonClient) => Promise<T>, fallback: T): Promise<T> {
   const transport = await connectSocket(socketPath(workspace)).catch(() => null)
   if (!transport) return fallback
   const client = createDaemonClient(transport)
   try {
-    await client.sessionOpen(
-      grokAdapterInfo(session, workspace, {
-        handle: resolveSessionHandle(),
-        resume: resolveResume(payload),
-        profile: resolveProfile(),
-      }),
-    )
-    return await fn(client, session)
+    return await fn(client)
   } catch {
     return fallback
   } finally {
     client.dispose()
     transport.close()
   }
+}
+
+async function withSession<T>(
+  payload: GrokHookPayload | null,
+  fn: (client: DaemonClient, session: string) => Promise<T>,
+  fallback: T,
+): Promise<T> {
+  const { workspace, session } = resolveContext(payload)
+  return withTransport(
+    workspace,
+    async (client) => {
+      await client.sessionOpen(
+        grokAdapterInfo(session, workspace, {
+          handle: resolveSessionHandle(),
+          resume: resolveResume(payload),
+          profile: resolveProfile(),
+        }),
+      )
+      return fn(client, session)
+    },
+    fallback,
+  )
 }
 
 export async function observeEvent(
@@ -120,15 +130,5 @@ export async function sessionStartContext(payload: GrokHookPayload | null): Prom
 
 export async function closeSession(payload: GrokHookPayload | null): Promise<void> {
   const { workspace, session } = resolveContext(payload)
-  const transport = await connectSocket(socketPath(workspace)).catch(() => null)
-  if (!transport) return
-  const client = createDaemonClient(transport)
-  try {
-    await client.sessionClose(session)
-  } catch {
-    // best-effort
-  } finally {
-    client.dispose()
-    transport.close()
-  }
+  await withTransport(workspace, (client) => client.sessionClose(session), undefined)
 }

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { buildLaunchEnv } from '@arsumbris/au-mcp-sdk'
 
 import { assertLaunchShape, grokLaunchCommand } from '../src/launch-grok.ts'
-import { isAdapterManagedPath, mergePluginPathsToml } from '../src/project-config.ts'
+import { isAdapterManagedPath, mergePluginPathsToml, pathsToReplace } from '../src/project-config.ts'
 import { syncInjectRules } from '../src/rules.ts'
 
 describe('launch', () => {
@@ -38,6 +38,16 @@ describe('launch', () => {
   it('refuses to rewrite a config it cannot parse', () => {
     const merged = mergePluginPathsToml('plugins = "nope"\n', [], ['/repo'])
     expect(merged.ok).toBe(false)
+  })
+
+  it('replaces the previous managed set and any next path this adapter owns', () => {
+    expect(
+      pathsToReplace(
+        ['/old/skills', '/keep-not-in-next'],
+        ['/repo', '/Users/me/.arsumbris/au-mcp/gen/skill/abc/grok/sel/pkg', '/other/plugin'],
+        '/repo',
+      ),
+    ).toEqual(['/old/skills', '/keep-not-in-next', '/repo', '/Users/me/.arsumbris/au-mcp/gen/skill/abc/grok/sel/pkg'])
   })
 
   it('recognizes generated skill paths as adapter-managed', () => {

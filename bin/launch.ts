@@ -11,7 +11,7 @@ import { buildLaunchEnv, LAUNCH_ENV } from '@arsumbris/au-mcp-sdk'
 import { flagValue, parseSelect } from '../src/cli-args.ts'
 import { CALLING_NOTE, grokInjectTransform } from '../src/inject-grok.ts'
 import { grokLaunchCommand } from '../src/launch-grok.ts'
-import { isAdapterManagedPath, mergePluginPathsToml } from '../src/project-config.ts'
+import { mergePluginPathsToml, pathsToReplace } from '../src/project-config.ts'
 import { syncInjectRules } from '../src/rules.ts'
 import { grokSkillTransform } from '../src/skills-grok.ts'
 
@@ -72,8 +72,8 @@ function mergeConfig(workspace: string, adapterDir: string, skillDirs: string[])
     existing = null
   }
   const previous = readManaged(workspace)
-  const remove = [...new Set([...previous, adapterDir, ...skillDirs].filter((path) => isAdapterManagedPath(path, adapterDir) || previous.includes(path)))]
   const add = [adapterDir, ...skillDirs]
+  const remove = pathsToReplace(previous, add, adapterDir)
   const merged = mergePluginPathsToml(existing, remove, add)
   if (!merged.ok) {
     process.stderr.write(`launch: left .grok/config.toml unchanged (${merged.error})\n`)

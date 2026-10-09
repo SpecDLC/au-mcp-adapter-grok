@@ -40,7 +40,10 @@ function str(raw: Record<string, unknown>, ...keys: string[]): string | undefine
   return undefined
 }
 
-/** Prefer camelCase, then the snake_case alias Grok also writes. */
+/**
+ * Prefer `hook_event_name`, which already holds the PascalCase event.
+ * Otherwise read `hookEventName` and turn `pre_tool_use` into `PreToolUse`.
+ */
 export function normalizePayload(raw: Record<string, unknown>): GrokHookPayload {
   const pascal = str(raw, 'hook_event_name')
   const snake = str(raw, 'hookEventName')
@@ -63,4 +66,11 @@ export function normalizePayload(raw: Record<string, unknown>): GrokHookPayload 
     agentType: str(raw, 'agentType', 'agent_type', 'subagentType', 'subagent_type'),
     raw,
   }
+}
+
+/** Read one hook payload from stdin, run `work`, and exit. A thrown error still fails the process. */
+export async function runHook(work: (payload: GrokHookPayload) => Promise<unknown>): Promise<void> {
+  const payload = normalizePayload(await readPayload(process.stdin))
+  await work(payload)
+  process.exit(0)
 }

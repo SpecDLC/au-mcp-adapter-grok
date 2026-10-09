@@ -3,9 +3,9 @@
 // A session-end Stop (reason other than end_turn) is observed by SessionEnd.
 import { liftTranscript } from '../src/lift.ts'
 import { reportTurnEnd } from '../src/bridge.ts'
-import { normalizePayload, readPayload } from '../src/payload.ts'
+import { runHook } from '../src/payload.ts'
 
-const payload = normalizePayload(await readPayload(process.stdin))
-await liftTranscript(payload)
-if (payload.reason === undefined || payload.reason === 'end_turn') await reportTurnEnd(payload)
-process.exit(0)
+await runHook(async (payload) => {
+  await liftTranscript(payload)
+  if (payload.reason === undefined || payload.reason === 'end_turn') await reportTurnEnd(payload)
+})
